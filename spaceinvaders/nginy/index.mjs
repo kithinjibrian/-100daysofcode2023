@@ -1,5 +1,5 @@
 //nginy game engine
-//ronounced as engine-y
+//pronounced as engine-y
 
 import Renderer from "./render/renderer.mjs";
 import Scene from "./scene/scene.mjs";

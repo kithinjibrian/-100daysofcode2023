@@ -5,11 +5,11 @@ class Circle extends Base {
         super(opts);
         //default options
         const def = {
-            color:"red",
-            radius:10,
+            color: "red",
+            radius: 10,
         };
         //override default options
-        Object.assign(def,opts);
+        Object.assign(def, opts);
         //stroke color
         this.color = def.color;
         //radius

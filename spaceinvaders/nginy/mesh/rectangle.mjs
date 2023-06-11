@@ -5,12 +5,12 @@ class Rectangle extends Base {
         super(opts);
         //default options
         const def = {
-            color:"red",
-            width:10,
-            height:10
+            color: "red",
+            width: 10,
+            height: 10
         };
         //override default options
-        Object.assign(def,opts);
+        Object.assign(def, opts);
         //stroke color
         this.color = def.color;
         //width

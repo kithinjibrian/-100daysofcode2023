@@ -4,14 +4,14 @@ import uuid from "../utils/uuid/uuid.mjs";
 class Base {
     constructor(opts) {
         const def = {
-            pos:{x:0,y:0},
-            vel:{x:0,y:0},
-            acc:{x:0,y:0},
-            name:"base",
-            id:uuid(8)
+            pos: { x: 0, y: 0 },
+            vel: { x: 0, y: 0 },
+            acc: { x: 0, y: 0 },
+            name: "base",
+            id: uuid(8)
         };
 
-        Object.assign(def,opts);
+        Object.assign(def, opts);
 
         this.name = def.name;
         this.id = def.id;

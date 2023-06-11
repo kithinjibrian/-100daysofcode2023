@@ -6,7 +6,7 @@ export default class Scene {
     constructor() {
         this.entities = [];
         this.collision = new Collision();
-        this.quadtree = new Quadtree({x:0,y:0,height:400,width:400});
+        this.quadtree = new Quadtree({ x: 0, y: 0, height: 400, width: 400 }, 4)
         this.pubsub = Pubsub.get()
         this.alive = true
     }
@@ -16,15 +16,15 @@ export default class Scene {
     }
 
     addMany(array) {
-        array.map(i=>{
+        array.map(i => {
             this.entities.push(i)
         })
     }
 
     update() {
-        if(this.alive) {
+        if (this.alive) {
             this.quadtree.clear()
-            this.entities.map(i=>{
+            this.entities.map(i => {
                 i.update();
                 this.quadtree.insert(i)
             })
@@ -32,29 +32,29 @@ export default class Scene {
         }
     }
 
-    getByName(name) {
-        return this.entities.filter(o=>o.name==name)
+    getObjectByName(name) {
+        return this.entities.filter(o => o.name == name)
     }
 
-    removeByName(name) {
-        const o = this.entities.findIndex(o=>o.name==name)
-        this.entities.splice(o,1);
+    removeObjectByName(name) {
+        const o = this.entities.findIndex(o => o.name == name)
+        this.entities.splice(o, 1);
     }
 
-    removeById(id) {
-        const o = this.entities.findIndex(o=>o.id==id)
-        this.entities.splice(o,1);
+    removeObjectById(id) {
+        const o = this.entities.findIndex(o => o.id == id)
+        this.entities.splice(o, 1);
     }
 
     handleCollisions() {
-        for(let i=0;i<this.entities.length;++i) {
+        for (let i = 0; i < this.entities.length; ++i) {
             const collidedObjects = this.quadtree.query(this.entities[i]);
-            for(let j=0;j<collidedObjects.length;j++) {
+            for (let j = 0; j < collidedObjects.length; j++) {
                 const collidedObject = collidedObjects[j];
-                if(collidedObject["id"] !== this.entities[i]['id']) {
-                    const bool = this.collision.checkCollision(this.entities[i],collidedObject);
-                    if(bool) {
-                        this.pubsub.publish("collision",this.entities[i],collidedObject)
+                if (this.entities !== undefined && collidedObject !== undefined && collidedObject["id"] !== this.entities[i]['id']) {
+                    const bool = this.collision.checkCollision(this.entities[i], collidedObject);
+                    if (bool) {
+                        this.pubsub.publish("collision", this.entities[i], collidedObject)
                     }
                 }
             }

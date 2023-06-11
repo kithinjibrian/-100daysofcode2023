@@ -1,26 +1,26 @@
 class Pubsub {
     constructor() {
-        if(!Pubsub.instance) {
+        if (!Pubsub.instance) {
             Pubsub.instance = this;
         }
         this.subscribers = new Map();
         return Pubsub.instance;
     }
-    get () {
+    get() {
         return this;
     }
-    subscribe(event,fn) {
-        if(this.subscribers.has(event)) {
+    subscribe(event, fn) {
+        if (this.subscribers.has(event)) {
             this.subscribers.get(event).push(fn);
         } else {
-            this.subscribers.set(event,[fn]);
+            this.subscribers.set(event, [fn]);
         }
     }
-    publish(event,...args) {
-        if(this.subscribers.has(event)) {
+    publish(event, ...args) {
+        if (this.subscribers.has(event)) {
             const fn = this.subscribers.get(event);
             fn.forEach(f => {
-                f.apply(null,args)
+                f.apply(null, args)
             });
         }
     }
