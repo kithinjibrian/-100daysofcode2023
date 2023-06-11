@@ -1,4 +1,5 @@
 import Vector from "../math/vector.mjs";
+import Pubsub from "../utils/pubsub/pubsub.mjs";
 import uuid from "../utils/uuid/uuid.mjs";
 
 class Base {
@@ -18,6 +19,16 @@ class Base {
         this.pos = new Vector(def.pos);
         this.vel = new Vector(def.vel);
         this.acc = new Vector(def.acc);
+        this.pubsub = Pubsub.get()
+    }
+
+    subscribe(event,cb) {
+        this.pubsub.subscribe(event,(a,...args)=>{
+            if(a.target.id===this.id) {
+                cb(...args)
+            }
+        })
+        return this;
     }
 
     update() {

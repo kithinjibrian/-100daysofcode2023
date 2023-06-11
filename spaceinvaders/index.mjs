@@ -1,4 +1,3 @@
-import Quadtree from "./nginy/data/qtree.mjs";
 import {
   Renderer,
   Scene,
@@ -21,18 +20,44 @@ const player = mint.create("rectangle", {
   height: 15,
   color: "green",
   name: "player"
+})
+.subscribe("collision",(a,b)=>{
+  if(b.name=='wall') {
+    a.acc.x = 0;
+  }
+})
+.subscribe("collision",(a,b)=>{
+  if(b.name=='fire') {
+    alert("Game Over");
+    scene.destory()
+  }
 });
 
 for (let x = 0; x < 10; ++x) {
-  for (let y = 0; y < 1; ++y) {
+  for (let y = 0; y < 3; ++y) {
     scene.add(mint.create("rectangle", {
       pos: { x: 20 + x * 30, y: 20 + y * 30 },
-      acc: { x: 0.5, y: 0.1 },
+      acc: { x: 0.9, y: 0.1 },
       width: 20,
       height: 20,
       color: "red",
       name: "enemy"
-    }))
+    })
+    .subscribe("collision",(a,b)=>{
+      if(b.name=="floor" || b.name=="player") {
+        alert("Game Over");
+        scene.destory()
+      }
+    })
+    .subscribe("collision",(a,b)=>{
+      if(b.name=='wall') {
+        const c = scene.getObjectByName('enemy');
+        for(const cs of c) {
+          cs.acc.x = cs.acc.x * -1
+        } 
+      }
+    })
+    )
   }
 }
 
@@ -49,14 +74,38 @@ scene.addMany([
     width: 1,
     height: 399,
     color: "blue",
-    name: "lwall"
+    name: "wall"
+  })
+  .subscribe("collision",(a,b)=>{
+    if(b.name=='enemy') {
+      const c = scene.getObjectByName('enemy');
+      for(const cs of c) {
+        if(cs.acc.x < 0) {
+          cs.acc.x = cs.acc.x * -1
+        }
+      } 
+    }  else if(b.name == "player") {
+      b.pos = new Vector({x:0,y:380});
+    }
   }),
   mint.create("rectangle", {
     pos: { x: 399, y: 1 },
     width: 1,
     height: 399,
     color: "blue",
-    name: "rwall"
+    name: "wall"
+  })
+  .subscribe("collision",(a,b)=>{
+    if(b.name=='enemy') {
+      const c = scene.getObjectByName('enemy');
+      for(const cs of c) {
+        if(cs.acc.x > 0) {
+          cs.acc.x = cs.acc.x * -1
+        }
+      } 
+    } else if(b.name == "player") {
+      b.pos = new Vector({x:385,y:380});
+    }
   }),
   mint.create("rectangle", {
     pos: { x: 0, y: 399 },
@@ -67,97 +116,41 @@ scene.addMany([
   })
 ])
 
-pubsub.subscribe("collision", (a, b) => {
-  if (a.name == 'bullet' && b.name == 'sky') {
-    scene.removeObjectById(a.id)
-  } else if (b.name == 'bullet' && a.name == 'sky') {
-    scene.removeObjectById(b.id)
-  }
-
-  if (a.name == 'fire' && b.name == 'floor') {
-    scene.removeObjectById(a.id)
-  } else if (b.name == 'fire' && a.name == 'floor') {
-    scene.removeObjectById(b.id)
-  }
-
-  if (a.name == 'bullet' && b.name == 'enemy' || b.name == 'bullet' && a.name == 'enemy') {
-    scene.removeObjectById(b.id)
-    scene.removeObjectById(a.id)
-  }
-
-  if (a.name == "enemy" && b.name == "floor" || b.name == "enemy" && a.name == "floor") {
-    alert("game over")
-    scene.destory()
-  }
-
-  if (a.name == "enemy" && b.name == "player" || b.name == "enemy" && a.name == "player") {
-    alert("game over")
-    scene.destory()
-  }
-
-  if (a.name == "fire" && b.name == "player" || b.name == "fire" && a.name == "player") {
-    alert("game over")
-    scene.destory()
-  }
-
-  if (a.name == "enemy" && b.name == "rwall" || b.name == "enemy" && a.name == "rwall") {
-    const c = scene.getObjectByName('enemy')
-    c.forEach(i => {
-      const a = i.acc;
-      if (a.x > 0) {
-        a.x = a.x * -1
-      }
-      i.acc = new Vector(a)
-    })
-  }
-
-  if (a.name == "enemy" && b.name == "lwall" || b.name == "enemy" && a.name == "lwall") {
-    const c = scene.getObjectByName('enemy')
-    c.forEach(i => {
-      const a = i.acc;
-      if (a.x < 0) {
-        a.x = a.x * -1
-      }
-      i.acc = new Vector(a)
-    })
-  }
-
-  if (a.name == "player" && b.name == "rwall" || b.name == "player" && a.name == "rwall") {
-    const c = scene.getObjectByName('player')[0];
-    const a = c.acc;
-    if (a.x > 0) {
-      a.x = a.x * -1
-    }
-    c.acc = new Vector(a);
-  }
-
-  if (a.name == "player" && b.name == "lwall" || b.name == "player" && a.name == "lwall") {
-    const c = scene.getObjectByName('player')[0];
-    const a = c.acc;
-    if (a.x < 0) {
-      a.x = a.x * -1
-    }
-    c.acc = new Vector(a);
-  }
-});
-
 pubsub.subscribe("keydown", (e) => {
   switch (e.keyCode) {
     case 37:
-      player.acc = new Vector({ x: -1, y: 0 })
+      player.acc = new Vector({ x: -2, y: 0 })
       break;
     case 39:
-      player.acc = new Vector({ x: 1, y: 0 })
+      player.acc = new Vector({ x: 2, y: 0 })
       break;
     case 32:
-      scene.add(mint.create("rectangle", {
-        pos: player.pos,
-        acc: { x: 0, y: -2 },
-        color: "black",
-        width: 2,
-        height: 5,
-        name: "bullet"
-      }))
+      const jump = Math.random();
+      const a = ()=>{
+        return mint.create("rectangle", {
+          pos: player.pos,
+          acc: { x: 0, y: -2 },
+          color: "black",
+          width: 2,
+          height: 5,
+          name: "bullet"
+        })
+        .subscribe("collision",(a,b)=>{
+          if(b.name === 'sky') {
+            scene.removeObjectById(a.id)
+          }
+        })
+        .subscribe("collision",(a,b)=>{
+          if(b.name === 'enemy') {
+            scene.removeObjectById(a.id)
+            scene.removeObjectById(b.id)
+          }
+        })
+      }
+
+      if(jump>0.3) {
+        scene.add(a())
+      }
       break;
   }
 })
@@ -173,21 +166,33 @@ pubsub.subscribe("keyup", (e) => {
   }
 })
 
-const fire = () => {
+const fire = (type) => {
   if (scene.alive) {
-    const a = scene.getObjectByName('enemy');
+    const a = scene.getObjectByName(type);
     const b = Math.random();
     const c = Math.random();
     const d = Math.floor(Math.random() * a.length)
-    if (a.length > 0 && b > 0.7 && c > 0.9) {
+    if (a.length > 0 && b > 0.5 && c > 0.9) {
       scene.add(mint.create("rectangle", {
         pos: a[d].pos,
-        acc: { x: 0, y: 1 + Math.random() * 3 },
+        acc: { x: 0, y: 1 + Math.random() * 4 },
         color: "blue",
         width: 2,
         height: 5,
         name: "fire"
-      }))
+      })
+      .subscribe("collision",(a,b)=>{
+        if(b.name=='floor') {
+          scene.removeObjectById(a.id)
+        }
+      })
+      .subscribe("collision",(a,b)=>{
+        if(b.name=='player') {
+          alert("Game Over");
+          scene.destory()
+        }
+      })
+      )
     }
   }
 }
@@ -195,13 +200,10 @@ const fire = () => {
 scene.add(player)
 event.listen();
 
-//console.log(new Quadtree())
 const run = () => {
-  //setTimeout(() => {
-    requestAnimationFrame(run);
-  //}, 5000)
-
-  fire()
+  requestAnimationFrame(run);
+  fire('enemy')
+  fire('fire')
   scene.update()
   renderer.render(scene)
 }

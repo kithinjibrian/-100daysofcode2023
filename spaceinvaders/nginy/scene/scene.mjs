@@ -35,6 +35,10 @@ export default class Scene {
     getObjectByName(name) {
         return this.entities.filter(o => o.name == name)
     }
+    
+    getObjectById(id) {
+        return this.entities.filter(o => o.id == id)
+    }
 
     removeObjectByName(name) {
         const o = this.entities.findIndex(o => o.name == name)
@@ -51,10 +55,14 @@ export default class Scene {
             const collidedObjects = this.quadtree.query(this.entities[i]);
             for (let j = 0; j < collidedObjects.length; j++) {
                 const collidedObject = collidedObjects[j];
-                if (this.entities !== undefined && collidedObject !== undefined && collidedObject["id"] !== this.entities[i]['id']) {
+                if ((this.entities[i] !== undefined && collidedObject !== undefined) && (collidedObject["id"] !== this.entities[i]['id'])) {
                     const bool = this.collision.checkCollision(this.entities[i], collidedObject);
                     if (bool) {
-                        this.pubsub.publish("collision", this.entities[i], collidedObject)
+                        this.pubsub.publish("collision",{
+                            target:{
+                                id:this.entities[i]['id']
+                            }
+                        }, this.entities[i], collidedObject)
                     }
                 }
             }
