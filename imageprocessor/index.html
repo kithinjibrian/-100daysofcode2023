@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    #canvas {
+      border: 1px solid black;
+    }
+  </style>
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@3.0.5/dist/vuetify.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet" />
+</head>
+
+<body>
+  <div id="app">
+    <v-app id="inspire">
+      <v-system-bar class="text-black">
+        <v-menu>
+          <template v-slot:activator="{ props }">
+            <v-btn variant="text" density="compact" v-bind="props">
+              File
+            </v-btn>
+          </template>
+          <v-card class="mx-auto" max-width="500">
+            <v-list>
+              <v-list-item link @click.prevent="$refs.file.click()">
+                <span>new</span>
+                <v-file-input v-show="false" ref="file" @change="addImage"></v-file-input>
+              </v-list-item>
+            </v-list>
+          </v-card>
+        </v-menu>
+        <v-spacer />
+      </v-system-bar>
+      <v-navigation-drawer rail>
+        <!--  -->
+      </v-navigation-drawer>
+      <v-main>
+        <v-container>
+          <v-row>
+            <v-col cols="12">
+              <v-sheet class="mx-auto" height="500" width="500">
+                <canvas id="canvas" ref="canvas" width="400" height="400"></canvas>
+              </v-sheet>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-main>
+      <v-navigation-drawer location="right">
+        <v-list>
+          <v-list-item v-for="n in llayers" :key="n" :title="`${ n.type }`" link>
+          </v-list-item>
+        </v-list>
+        <v-footer>
+          <v-menu>
+            <template v-slot:activator="{ props }">
+              <v-icon v-bind="props">
+                mdi-account
+              </v-icon>
+            </template>
+            <v-card class="mx-auto" max-width="500">
+              <v-list>
+                <v-list-item link @click="addAdjustment('grayscale')">
+                  <span>Grayscale</span>
+                </v-list-item>
+                <v-list-item link @click="addAdjustment('brightness',5)">
+                  <span>Brightness</span>
+                </v-list-item>
+                <v-list-item link @click="addAdjustment('inverse')">
+                  <span>Inverse</span>
+                </v-list-item>
+              </v-list>
+            </v-card>
+          </v-menu>
+        </v-footer>
+      </v-navigation-drawer>
+    </v-app>
+  </div>
+  <script type="module">
+    import Layers from "./layer/layer.mjs";
+    import Caretaker from "./memento/caretaker.mjs";
+    import Renderer from "./renderer/renderer.mjs";
+    import loadImage from "./utils/upload.mjs";
+    import BoxSelect from "./tools/selection/box.mjs"
+    const { createApp, ref, onMounted, reactive } = Vue;
+    const { createVuetify } = Vuetify;
+
+    const vuetify = createVuetify()
+
+    const app = createApp({
+      setup() {
+        const canvas = ref(null);
+        const file = ref(null)
+        const caretaker = new Caretaker();
+        const layers = reactive(Layers.get());
+
+        
+        const llayers = layers.getLayers()
+
+        let renderer = null;
+        let box = null
+
+        const addImage = async (e) => {
+          const a = await loadImage(e);
+          layers.add("image", {
+            blendMode: "normal"
+          }, a)
+          renderer.render()
+          caretaker.saveMemento(layers)
+        }
+        const addAdjustment = (a, ...args) => {
+          layers.add(a, ...args)
+          renderer.render()
+          caretaker.saveMemento(layers);
+        }
+        onMounted(() => {
+          renderer = new Renderer(canvas.value);
+          box = reactive(BoxSelect.get().setCanvas(canvas.value))
+          box.listen((canvas,ccanvas)=>{
+            layers.add("selection", {
+            blendMode: "normal"
+          }, canvas,ccanvas)
+          renderer.render()
+          })
+        });
+        return {
+          canvas,
+          file,
+          llayers,
+          addImage,
+          addAdjustment
+        }
+      }
+    })
+    app.use(vuetify).mount('#app')
+  </script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@3.3.1/dist/vuetify.min.js"></script>
+</body>
+
+</html>
