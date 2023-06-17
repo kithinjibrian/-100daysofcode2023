@@ -5,18 +5,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
-  <style>
-    #canvas {
-      border: 1px solid black;
-    }
-  </style>
   <link href="https://cdn.jsdelivr.net/npm/vuetify@3.0.5/dist/vuetify.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet" />
 </head>
 
 <body>
   <div id="app">
-    <v-app id="inspire">
+    <v-app id="inspire" theme="dark">
       <v-system-bar class="text-black">
         <v-menu>
           <template v-slot:activator="{ props }">
@@ -24,9 +19,9 @@
               File
             </v-btn>
           </template>
-          <v-card class="mx-auto" max-width="500">
+          <v-card min-width="200">
             <v-list>
-              <v-list-item link @click.prevent="$refs.file.click()">
+              <v-list-item color="primary" link @click.prevent="$refs.file.click()">
                 <span>new</span>
                 <v-file-input v-show="false" ref="file" @change="addImage"></v-file-input>
               </v-list-item>
@@ -35,51 +30,84 @@
         </v-menu>
         <v-spacer />
       </v-system-bar>
-      <v-navigation-drawer rail>
-        <!--  -->
+      <v-navigation-drawer rail permanent>
+        <v-list density="compact" nav>
+          <v-list-item color="primary" prepend-icon="mdi-rectangle-outline" title="box" value="box" @click="boxActivate(isBoxSelected = !isBoxSelected)"></v-list-item>
+          <v-list-item color="primary" prepend-icon="mdi-brush" title="brush" value="brush"></v-list-item>
+        </v-list>
       </v-navigation-drawer>
       <v-main>
         <v-container>
           <v-row>
-            <v-col cols="12">
-              <v-sheet class="mx-auto" height="500" width="500">
+            <v-col cols="12" class="pa-15">
+              <v-sheet class="mx-auto" height="400" width="400">
                 <canvas id="canvas" ref="canvas" width="400" height="400"></canvas>
               </v-sheet>
             </v-col>
           </v-row>
         </v-container>
       </v-main>
-      <v-navigation-drawer location="right">
-        <v-list>
-          <v-list-item v-for="n in llayers" :key="n" :title="`${ n.type }`" link>
-          </v-list-item>
-        </v-list>
-        <v-footer>
-          <v-menu>
-            <template v-slot:activator="{ props }">
-              <v-icon v-bind="props">
-                mdi-account
-              </v-icon>
-            </template>
-            <v-card class="mx-auto" max-width="500">
-              <v-list>
-                <v-list-item link @click="addAdjustment('grayscale')">
-                  <span>Grayscale</span>
-                </v-list-item>
-                <v-list-item link @click="addAdjustment('brightness',5)">
-                  <span>Brightness</span>
-                </v-list-item>
-                <v-list-item link @click="addAdjustment('inverse')">
-                  <span>Inverse</span>
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-menu>
-        </v-footer>
+      <v-navigation-drawer location="right" permanent>
+        <v-container>
+          <v-row>
+            <v-col cols="12" class="ma-0 pa-0">
+              <v-card height="45vh" flat>
+                <v-tabs v-model="tab" density="compact">
+                  <v-tab value="one">History</v-tab>
+                </v-tabs>
+
+                <v-card-text>
+                  <v-window v-model="tab">
+                    <v-window-item value="one">
+                      history
+                    </v-window-item>
+                  </v-window>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            <v-col cols="12" class="ma-0 pa-0">
+              <v-card height="45vh" flat>
+                <v-tabs v-model="tab" density="compact">
+                  <v-tab value="one">Layers</v-tab>
+                </v-tabs>
+
+                <v-card-text>
+                  <v-window v-model="tab">
+                    <v-window-item value="one">
+                      <v-list lines="one">
+                        <v-list-item v-for="(layer,n) in listLayers" :key="n" :title="layer.type"></v-list-item>
+                      </v-list>
+                    </v-window-item>
+                  </v-window>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            <v-col cols="12" class="ma-0 pa-0">
+              <v-card height="5vh" flat>
+                <v-icon icon="mdi-layers-plus"></v-icon>
+                <v-menu>
+                  <template v-slot:activator="{ props }">
+                    <v-icon icon="mdi-circle-slice-4" class="ms-2" v-bind="props"></v-icon>
+                  </template>
+                  <v-card min-width="200">
+                    <v-list>
+                      <v-list-item link color="primary" @click="addAdjustment('grayscale')">
+                        <v-list-item-title>Grayscale</v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </v-card>
+                </v-menu>
+                <v-icon icon="mdi-battery" class="ms-2"></v-icon>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-container>
       </v-navigation-drawer>
+      <v-navigation-drawer rail location="right"></v-navigation-drawer>
     </v-app>
   </div>
-  <script type="module">
+  <script type="module" src="index.mjs"></script>
+  <!-- <script type="module">
     import Layers from "./layer/layer.mjs";
     import Caretaker from "./memento/caretaker.mjs";
     import Renderer from "./renderer/renderer.mjs";
@@ -93,11 +121,12 @@
     const app = createApp({
       setup() {
         const canvas = ref(null);
-        const file = ref(null)
+        const file = ref(null);
+        const tab = null
         const caretaker = new Caretaker();
         const layers = reactive(Layers.get());
 
-        
+
         const llayers = layers.getLayers()
 
         let renderer = null;
@@ -111,32 +140,40 @@
           renderer.render()
           caretaker.saveMemento(layers)
         }
+
         const addAdjustment = (a, ...args) => {
           layers.add(a, ...args)
           renderer.render()
           caretaker.saveMemento(layers);
         }
+
+        const bselect = () => {
+          box.setOn(true);
+          box.listen((canvas, ccanvas) => {
+            layers.add("selection", {
+              blendMode: "normal"
+            }, canvas, ccanvas)
+            renderer.render()
+          })
+        }
+
         onMounted(() => {
           renderer = new Renderer(canvas.value);
           box = reactive(BoxSelect.get().setCanvas(canvas.value))
-          box.listen((canvas,ccanvas)=>{
-            layers.add("selection", {
-            blendMode: "normal"
-          }, canvas,ccanvas)
-          renderer.render()
-          })
         });
         return {
           canvas,
+          tab,
           file,
           llayers,
           addImage,
-          addAdjustment
+          addAdjustment,
+          bselect
         }
       }
     })
     app.use(vuetify).mount('#app')
-  </script>
+  </script> -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vuetify@3.3.1/dist/vuetify.min.js"></script>
 </body>

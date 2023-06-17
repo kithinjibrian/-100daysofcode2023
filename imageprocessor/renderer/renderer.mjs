@@ -28,9 +28,9 @@ export default class Renderer{
                     break;
                 case "selection":
                     this.ctx.globalCompositeOperation = i.opts.blendMode;
-                    let {canvas,ccanvas} = i.fn()
-                    this.ctx.drawImage(ccanvas,0,0)
-                    this.ctx.drawImage(canvas,0,0)
+                    this.ctx.strokeStyle = "red";
+                    this.ctx.lineWidth = 2;
+                    this.ctx.strokeRect(0,0,50,50)
                     break;
                 default:
                     var imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);

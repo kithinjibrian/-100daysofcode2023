@@ -12,6 +12,7 @@ class BoxSelect {
         this.ownCanvas = document.createElement("canvas");
         this.ownCtx = this.ownCanvas.getContext("2d")
         this.isMouseDown = false
+        this.on = false
         this.ccanvas = 90
         return BoxSelect.instance;
     }
@@ -28,16 +29,23 @@ class BoxSelect {
         return this;
     }
 
+    setOn(bool) {
+        this.on = bool;
+    }
+
     listen(cb) {
         const self = this;
         this.canvas.addEventListener("mousedown", this.mousedown(self), false)
         this.canvas.addEventListener("mouseup", this.mouseup(self), false)
-        this.canvas.addEventListener("mousemove", this.mousemove(self,cb), false)
+        if(this.on) {
+           this.canvas.addEventListener("mousemove", this.mousemove(self,cb), false) 
+        }
     }
 
     mousedown(self) {
         return (e) => {
-            self.isMouseDown = true
+            self.isMouseDown = true;
+            self.on = self.on ? false : self.on;
             self.x = e.offsetX
             self.y = e.offsetY
             const d = document.createElement("canvas")
