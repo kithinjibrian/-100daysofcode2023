@@ -2,7 +2,7 @@
 
 Iguana Image Processor is a web application that allows users to optimize images. It uses Vue.js and JavaScript for its development.
 
-![Screenshots]("screenshot.png")
+![Screenshots]("./screenshot.png")
 
 ### Features
 1. It uses layers for non-destructive editing.
