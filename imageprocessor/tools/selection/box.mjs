@@ -22,12 +22,7 @@ class Box {
     get() {
         return this;
     }
-
-    setCanvas(canvas) {
-        this.canvas = canvas;
-        return this;
-    }
-
+    
     setBoxSelection(bool) {
         this.isBoxSelected = bool
     }

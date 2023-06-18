@@ -32,8 +32,8 @@
       </v-system-bar>
       <v-navigation-drawer rail permanent>
         <v-list density="compact" nav>
-          <v-list-item color="primary" prepend-icon="mdi-rectangle-outline" title="box" value="box" @click="boxActivate(isBoxSelected = !isBoxSelected)"></v-list-item>
-          <v-list-item color="primary" prepend-icon="mdi-brush" title="brush" value="brush"></v-list-item>
+          <v-list-item color="primary" prepend-icon="mdi-rectangle-outline" title="box" value="box" @click="activate('box',isBoxSelected = !isBoxSelected)"></v-list-item>
+          <v-list-item color="primary" prepend-icon="mdi-brush" title="brush" value="brush" @click="activate('brush',isBrushSelected = !isBrushSelected)"></v-list-item>
         </v-list>
       </v-navigation-drawer>
       <v-main>

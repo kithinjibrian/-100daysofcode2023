@@ -1,6 +1,7 @@
 import Event from "./event/event.mjs";
 import pubsub from "./pubsub/pubsub.mjs";
 import Box from "./tools/selection/box.mjs";
+import Brush from "./tools/brushes/brush.mjs";
 import Renderer from "./renderer/renderer.mjs";
 import Layers from "./layer/layer.mjs";
 import loadImage from "./utils/upload.mjs";
@@ -19,8 +20,11 @@ const app = createApp({
             caretaker = reactive(Caretaker.get()),
             mementos = caretaker.getMementos(),
             layers = reactive(Layers.get()),
-            listLayers = layers.getLayers();
-        let isboxSelected = false;
+            listLayers = layers.getLayers(),
+            brush = new Brush().listen();
+
+        let isBoxSelected = false,
+            isBrushSelected = false;
         //classes that use canvas after dom is mounted
         let event, box, renderer;
         //onmount dom
@@ -28,7 +32,7 @@ const app = createApp({
             const cnvs = canvas.value;
             renderer = new Renderer(cnvs)
             event = new Event(cnvs).listen();
-            box = Box.get().setCanvas(cnvs).listen();
+            box = Box.get().listen();
         });          
 
         //event listeners
@@ -43,10 +47,38 @@ const app = createApp({
             caretaker.saveMemento(layers);
         })
 
+        pubsub.subscribe("drawbrush", (dim) => {
+            layers.add("brush", dim);
+            renderer.render();
+        })
+
+        pubsub.subscribe("brushdrawn", (dim) => {
+            layers.add("brush", dim);
+            renderer.render();
+            caretaker.saveMemento(layers);
+            console.log(caretaker)
+        })
+
         //methods
         const boxActivate = (e) => {
             box.setBoxSelection(e);
             pubsub.publish("boxselected", null);
+        }
+
+        const brushActivate = (e) => {
+            brush.setBrushSelection(e);
+            pubsub.publish("brushselected", null);
+        }
+
+        const activate = (e,state) => {
+            switch(e) {
+                case "box":
+                    boxActivate(state)
+                    break;
+                case "brush":
+                    brushActivate(state)
+                    break;
+            }
         }
 
         const addImage = async (image) => {
@@ -71,12 +103,13 @@ const app = createApp({
 
         return {
             canvas,
-            isboxSelected,
+            isBoxSelected,
+            isBrushSelected,
             listLayers,
             mementos,
             tab,
             //methods
-            boxActivate,
+            activate,
             addImage,
             addAdjustment,
             urdo

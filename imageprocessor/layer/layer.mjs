@@ -46,7 +46,7 @@ class Layers {
                 this.layers.unshift({
                     type: 'grayscale',
                     visible: true,
-                    action:"applyGrayscale",
+                    action: "applyGrayscale",
                     fn: this.grayscale
                 })
                 break;
@@ -54,7 +54,7 @@ class Layers {
                 this.layers.unshift({
                     type: "brightness",
                     visible: true,
-                    action:"applyBrightness",
+                    action: "applyBrightness",
                     fn: this.brightness(args[0])
                 });
                 break;
@@ -62,7 +62,7 @@ class Layers {
                 this.layers.unshift({
                     type: 'inverse',
                     visible: true,
-                    action:"applyInverse",
+                    action: "applyInverse",
                     fn: this.inverse
                 });
                 break;
@@ -71,7 +71,7 @@ class Layers {
                     type: 'image',
                     visible: true,
                     opts: args[0],
-                    action:"addImage",
+                    action: "addImage",
                     fn: this.image(args[1])
                 });
                 break;
@@ -83,10 +83,24 @@ class Layers {
                 this.layers.unshift({
                     type: 'selection',
                     visible: true,
-                    dim:{...args[0]},
-                    action:"boxSelection",
-                    fn: ()=> console.log('orca')
+                    dim: { ...args[0] },
+                    action: "boxSelection",
+                    fn: () => console.log('orca')
                 });
+                break;
+            case 'brush':
+                const index1 = this.layers.findIndex(({ type }) => type == 'brush');
+                if (index1 != -1) {
+                    this.layers.splice(index1, 1);
+                }
+                this.layers.unshift({
+                    type: 'brush',
+                    visible: true,
+                    dim: [...args[0]],
+                    action: "brushDraw",
+                    fn: () => console.log('orca')
+                });
+                break;
         }
     }
 
