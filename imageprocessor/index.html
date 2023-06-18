@@ -59,7 +59,11 @@
                 <v-card-text>
                   <v-window v-model="tab">
                     <v-window-item value="one">
-                      history
+                      <v-list lines="one" style="max-height: 35vh" class="overflow-y-auto">
+                        <v-list-item color="primary" v-for="(memento,n) in mementos" :key="n" @click="urdo(n)" link>
+                          {{memento.state[0]['action']}}
+                        </v-list-item>
+                      </v-list>
                     </v-window-item>
                   </v-window>
                 </v-card-text>
@@ -74,7 +78,7 @@
                 <v-card-text>
                   <v-window v-model="tab">
                     <v-window-item value="one">
-                      <v-list lines="one">
+                      <v-list lines="one" style="max-height: 35vh" class="overflow-y-auto">
                         <v-list-item v-for="(layer,n) in listLayers" :key="n" :title="layer.type"></v-list-item>
                       </v-list>
                     </v-window-item>
@@ -84,10 +88,10 @@
             </v-col>
             <v-col cols="12" class="ma-0 pa-0">
               <v-card height="5vh" flat>
-                <v-icon icon="mdi-layers-plus"></v-icon>
+                <v-icon icon="mdi-layers-plus" class="mr-3"></v-icon>
                 <v-menu>
                   <template v-slot:activator="{ props }">
-                    <v-icon icon="mdi-circle-slice-4" class="ms-2" v-bind="props"></v-icon>
+                    <v-icon icon="mdi-circle-slice-4" class="mr-3" v-bind="props"></v-icon>
                   </template>
                   <v-card min-width="200">
                     <v-list>
@@ -97,83 +101,16 @@
                     </v-list>
                   </v-card>
                 </v-menu>
-                <v-icon icon="mdi-battery" class="ms-2"></v-icon>
+                <v-icon icon="mdi-battery" class="mr-2"></v-icon>
               </v-card>
             </v-col>
           </v-row>
         </v-container>
       </v-navigation-drawer>
-      <v-navigation-drawer rail location="right"></v-navigation-drawer>
+      <v-navigation-drawer rail location="right" permanent></v-navigation-drawer>
     </v-app>
   </div>
   <script type="module" src="index.mjs"></script>
-  <!-- <script type="module">
-    import Layers from "./layer/layer.mjs";
-    import Caretaker from "./memento/caretaker.mjs";
-    import Renderer from "./renderer/renderer.mjs";
-    import loadImage from "./utils/upload.mjs";
-    import BoxSelect from "./tools/selection/box.mjs"
-    const { createApp, ref, onMounted, reactive } = Vue;
-    const { createVuetify } = Vuetify;
-
-    const vuetify = createVuetify()
-
-    const app = createApp({
-      setup() {
-        const canvas = ref(null);
-        const file = ref(null);
-        const tab = null
-        const caretaker = new Caretaker();
-        const layers = reactive(Layers.get());
-
-
-        const llayers = layers.getLayers()
-
-        let renderer = null;
-        let box = null
-
-        const addImage = async (e) => {
-          const a = await loadImage(e);
-          layers.add("image", {
-            blendMode: "normal"
-          }, a)
-          renderer.render()
-          caretaker.saveMemento(layers)
-        }
-
-        const addAdjustment = (a, ...args) => {
-          layers.add(a, ...args)
-          renderer.render()
-          caretaker.saveMemento(layers);
-        }
-
-        const bselect = () => {
-          box.setOn(true);
-          box.listen((canvas, ccanvas) => {
-            layers.add("selection", {
-              blendMode: "normal"
-            }, canvas, ccanvas)
-            renderer.render()
-          })
-        }
-
-        onMounted(() => {
-          renderer = new Renderer(canvas.value);
-          box = reactive(BoxSelect.get().setCanvas(canvas.value))
-        });
-        return {
-          canvas,
-          tab,
-          file,
-          llayers,
-          addImage,
-          addAdjustment,
-          bselect
-        }
-      }
-    })
-    app.use(vuetify).mount('#app')
-  </script> -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vuetify@3.3.1/dist/vuetify.min.js"></script>
 </body>

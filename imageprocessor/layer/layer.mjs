@@ -43,45 +43,50 @@ class Layers {
     add(type, ...args) {
         switch (type) {
             case "grayscale":
-                this.layers.push({
+                this.layers.unshift({
                     type: 'grayscale',
+                    visible: true,
+                    action:"applyGrayscale",
                     fn: this.grayscale
                 })
                 break;
             case "brightness":
-                this.layers.push({
+                this.layers.unshift({
                     type: "brightness",
+                    visible: true,
+                    action:"applyBrightness",
                     fn: this.brightness(args[0])
                 });
                 break;
             case "inverse":
-                this.layers.push({
+                this.layers.unshift({
                     type: 'inverse',
+                    visible: true,
+                    action:"applyInverse",
                     fn: this.inverse
                 });
                 break;
             case "image":
-                this.layers.push({
+                this.layers.unshift({
                     type: 'image',
+                    visible: true,
                     opts: args[0],
+                    action:"addImage",
                     fn: this.image(args[1])
                 });
                 break;
             case 'selection':
                 const index = this.layers.findIndex(({ type }) => type == 'selection');
                 if (index != -1) {
-                    this.layers[index] = {
-                        type: 'selection',
-                        opts: args[0],
-                        fn: this.selection(args[1], args[2])
-                    }
-                } else {
-                    this.layers.push({
-                        type: 'selection',
-                        opts: args[0],
-                        fn: this.selection(args[1], args[2])
-                    })
+                    this.layers.splice(index, 1);
                 }
+                this.layers.unshift({
+                    type: 'selection',
+                    visible: true,
+                    dim:{...args[0]},
+                    action:"boxSelection",
+                    fn: ()=> console.log('orca')
+                });
         }
     }
 
@@ -116,12 +121,6 @@ class Layers {
     image(image) {
         return () => {
             return image
-        }
-    }
-
-    selection(dim) {
-        return () => {
-            return dim
         }
     }
 }

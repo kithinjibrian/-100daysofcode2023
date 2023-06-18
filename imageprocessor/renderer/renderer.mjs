@@ -1,6 +1,6 @@
 import Layers from "../layer/layer.mjs";
 
-export default class Renderer{
+export default class Renderer {
     constructor(opts) {
         const def = {
             canvasWidth: "400",
@@ -19,18 +19,19 @@ export default class Renderer{
 
     render() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        const a = this.layers.getLayers()
-        a.map(i=>{
-            switch(i.type) {
+        const a = this.layers.getLayers();
+        for (let y = a.length - 1; y >= 0; y--) {
+            const i = a[y];
+            switch (i.type) {
                 case "image":
                     this.ctx.globalCompositeOperation = i.opts.blendMode;
-                    this.ctx.drawImage(i.fn(),0,0)
+                    this.ctx.drawImage(i.fn(), 0, 0)
                     break;
                 case "selection":
-                    this.ctx.globalCompositeOperation = i.opts.blendMode;
                     this.ctx.strokeStyle = "red";
                     this.ctx.lineWidth = 2;
-                    this.ctx.strokeRect(0,0,50,50)
+                    const { x, y, x2, y2 } = i.dim
+                    this.ctx.strokeRect(x, y, x2 - x, y2 - y)
                     break;
                 default:
                     var imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
@@ -39,7 +40,7 @@ export default class Renderer{
                     this.ctx.putImageData(imageData, 0, 0);
                     break;
             }
-        })
+        }
     }
 }
 
