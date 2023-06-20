@@ -21,6 +21,11 @@ class Layers {
         return this.layers
     }
 
+    setVisibility(index) {
+        const a = this.layers[index]['visible'];
+        this.layers[index]['visible'] = !a
+    }
+
     removeLayerByType(type) {
         this.layers = [];
     }

@@ -42,6 +42,9 @@ export default class Renderer {
         const a = this.layers.getLayers();
         for (let y = a.length - 1; y >= 0; y--) {
             const i = a[y];
+            if(!i.visible) {
+                continue;
+            }
             switch (i.type) {
                 case "image":
                     this.ctx.globalCompositeOperation = i.opts.blendMode;

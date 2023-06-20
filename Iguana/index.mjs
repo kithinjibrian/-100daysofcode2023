@@ -7,7 +7,7 @@ import Layers from "./layer/layer.mjs";
 import loadImage from "./utils/upload.mjs";
 import Caretaker from "./memento/caretaker.mjs";
 
-const { createApp, ref, onMounted, reactive, watch } = Vue;
+const { createApp, ref, onMounted, reactive, computed, watch } = Vue;
 const { createVuetify } = Vuetify;
 
 const vuetify = createVuetify()
@@ -17,23 +17,26 @@ const app = createApp({
         //data
         const canvas = ref(null),
             tab = null,
+            tab1 = null,
             caretaker = reactive(Caretaker.get()),
-            mementos = caretaker.getMementos(),
             layers = reactive(Layers.get()),
-            listLayers = layers.getLayers(),
             brush = new Brush().listen();
 
         let isBoxSelected = false,
             isBrushSelected = false;
         //classes that use canvas after dom is mounted
-        let event, box, renderer;
+        let event, box, renderer, listLayers = ref(layers.getLayers());
+        //computed values
+        const mementos = computed(()=>{
+            return caretaker.getMementos();
+        })
         //onmount dom
         onMounted(() => {
             const cnvs = canvas.value;
-            renderer = new Renderer(cnvs)
+            renderer = new Renderer(cnvs);
             event = new Event(cnvs).listen();
             box = Box.get().listen();
-        });          
+        });     
 
         //event listeners
         pubsub.subscribe("drawbox", (dim) => {
@@ -56,7 +59,6 @@ const app = createApp({
             layers.add("brush", dim);
             renderer.render();
             caretaker.saveMemento(layers);
-            console.log(caretaker)
         })
 
         //methods
@@ -98,7 +100,13 @@ const app = createApp({
 
         const urdo = (a) => {
             caretaker.restoreMemento(a);
+            listLayers.value = layers.getLayers()
             renderer.render();
+        }
+
+        const setVisibility = (index) => {
+            layers.setVisibility(index)
+            renderer.render()
         }
 
         return {
@@ -108,11 +116,13 @@ const app = createApp({
             listLayers,
             mementos,
             tab,
+            tab1,
             //methods
             activate,
             addImage,
             addAdjustment,
-            urdo
+            urdo,
+            setVisibility
         }
     }
 })

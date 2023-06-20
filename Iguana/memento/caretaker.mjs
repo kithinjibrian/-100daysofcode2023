@@ -23,8 +23,7 @@ class Caretaker {
            this.mementos.splice(this.index + 1,this.mementos.length);
         }
         this.index = -1;
-        this.mementos.push(originator.createMemento());
-        
+        this.mementos.push(originator.createMemento());  
     }
 
     restoreMemento(index) {

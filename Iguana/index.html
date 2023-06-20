@@ -32,8 +32,10 @@
       </v-system-bar>
       <v-navigation-drawer rail permanent>
         <v-list density="compact" nav>
-          <v-list-item color="primary" prepend-icon="mdi-rectangle-outline" title="box" value="box" @click="activate('box',isBoxSelected = !isBoxSelected)"></v-list-item>
-          <v-list-item color="primary" prepend-icon="mdi-brush" title="brush" value="brush" @click="activate('brush',isBrushSelected = !isBrushSelected)"></v-list-item>
+          <v-list-item color="primary" prepend-icon="mdi-rectangle-outline" title="box" value="box"
+            @click="activate('box',isBoxSelected = !isBoxSelected)"></v-list-item>
+          <v-list-item color="primary" prepend-icon="mdi-brush" title="brush" value="brush"
+            @click="activate('brush',isBrushSelected = !isBrushSelected)"></v-list-item>
         </v-list>
       </v-navigation-drawer>
       <v-main>
@@ -42,6 +44,7 @@
             <v-col cols="12" class="pa-15">
               <v-sheet class="mx-auto" height="400" width="400">
                 <canvas id="canvas" ref="canvas" width="400" height="400"></canvas>
+                {{ac}}
               </v-sheet>
             </v-col>
           </v-row>
@@ -60,7 +63,8 @@
                   <v-window v-model="tab">
                     <v-window-item value="one">
                       <v-list lines="one" style="max-height: 35vh" class="overflow-y-auto">
-                        <v-list-item color="primary" v-for="(memento,n) in mementos" :key="n" @click="urdo(n)" link>
+                        <v-list-item color="primary" v-for="(memento,n) in mementos" :key="n" @click="urdo(n)"
+                          :value="n" link>
                           {{memento.state[0]['action']}}
                         </v-list-item>
                       </v-list>
@@ -71,7 +75,7 @@
             </v-col>
             <v-col cols="12" class="ma-0 pa-0">
               <v-card height="45vh" flat>
-                <v-tabs v-model="tab" density="compact">
+                <v-tabs v-model="tab1" density="compact">
                   <v-tab value="one">Layers</v-tab>
                 </v-tabs>
 
@@ -79,7 +83,12 @@
                   <v-window v-model="tab">
                     <v-window-item value="one">
                       <v-list lines="one" style="max-height: 35vh" class="overflow-y-auto">
-                        <v-list-item v-for="(layer,n) in listLayers" :key="n" :title="layer.type"></v-list-item>
+                        <v-list-item color="primary" v-for="(layer,n) in listLayers" :key="n" :title="layer.type"
+                          :value="n" link>
+                          <template v-slot:prepend>
+                            <v-icon @click="setVisibility(n)">{{layer.visible ? 'mdi-eye' : 'mdi-eye-off'}}</v-icon>
+                          </template>
+                        </v-list-item>
                       </v-list>
                     </v-window-item>
                   </v-window>
