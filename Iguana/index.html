@@ -33,18 +33,19 @@
       <v-navigation-drawer rail permanent>
         <v-list density="compact" nav>
           <v-list-item color="primary" prepend-icon="mdi-rectangle-outline" title="box" value="box"
-            @click="activate('box',isBoxSelected = !isBoxSelected)"></v-list-item>
+            @click="activate('box')"></v-list-item>
           <v-list-item color="primary" prepend-icon="mdi-brush" title="brush" value="brush"
-            @click="activate('brush',isBrushSelected = !isBrushSelected)"></v-list-item>
+            @click="activate('brush')"></v-list-item>
+          <v-list-item color="primary" prepend-icon="mdi-eraser" title="eraser" value="eraser"
+            @click="activate('eraser')"></v-list-item>
         </v-list>
       </v-navigation-drawer>
       <v-main>
         <v-container>
           <v-row>
             <v-col cols="12" class="pa-15">
-              <v-sheet class="mx-auto" height="400" width="400">
-                <canvas id="canvas" ref="canvas" width="400" height="400"></canvas>
-                {{ac}}
+              <v-sheet v-show="listLayers.length > 0" class="mx-auto" :height="height" :width="width">
+                <canvas id="canvas" ref="canvas"></canvas>
               </v-sheet>
             </v-col>
           </v-row>
@@ -82,12 +83,12 @@
                 <v-card-text>
                   <v-window v-model="tab">
                     <v-window-item value="one">
-                      <v-list lines="one" style="max-height: 35vh" class="overflow-y-auto">
-                        <v-list-item color="primary" v-for="(layer,n) in listLayers" :key="n" :title="layer.type"
-                          :value="n" link>
+                      <v-list v-model="activeLayer" lines="one" style="max-height: 35vh" class="overflow-y-auto">
+                        <v-list-item color="primary" v-for="(layer,n) in listLayers" :key="n" :value="n" @click="activeLayer=n" link>
                           <template v-slot:prepend>
                             <v-icon @click="setVisibility(n)">{{layer.visible ? 'mdi-eye' : 'mdi-eye-off'}}</v-icon>
                           </template>
+                          <v-list-item-title v-text="layer.type" contenteditable="true"></v-list-item-title>
                         </v-list-item>
                       </v-list>
                     </v-window-item>
@@ -97,7 +98,7 @@
             </v-col>
             <v-col cols="12" class="ma-0 pa-0">
               <v-card height="5vh" flat>
-                <v-icon icon="mdi-layers-plus" class="mr-3"></v-icon>
+                <v-icon icon="mdi-layers-plus" class="mr-3" @click="addLayer()"></v-icon>
                 <v-menu>
                   <template v-slot:activator="{ props }">
                     <v-icon icon="mdi-circle-slice-4" class="mr-3" v-bind="props"></v-icon>
@@ -106,6 +107,12 @@
                     <v-list>
                       <v-list-item link color="primary" @click="addAdjustment('grayscale')">
                         <v-list-item-title>Grayscale</v-list-item-title>
+                      </v-list-item>
+                      <v-list-item link color="primary" @click="addAdjustment('brightness')">
+                        <v-list-item-title>Brightness</v-list-item-title>
+                      </v-list-item>
+                      <v-list-item link color="primary" @click="addAdjustment('inverse')">
+                        <v-list-item-title>Inverse</v-list-item-title>
                       </v-list-item>
                     </v-list>
                   </v-card>

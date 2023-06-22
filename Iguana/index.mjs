@@ -16,18 +16,24 @@ const app = createApp({
     setup() {
         //data
         const canvas = ref(null),
+            activeLayer = ref(0),
             tab = null,
             tab1 = null,
             caretaker = reactive(Caretaker.get()),
             layers = reactive(Layers.get()),
-            brush = new Brush().listen();
+            brush = new Brush();
 
         let isBoxSelected = false,
             isBrushSelected = false;
         //classes that use canvas after dom is mounted
-        let event, box, renderer, listLayers = ref(layers.getLayers());
+        let event,
+            box,
+            renderer,
+            listLayers = ref(layers.getLayers()),
+            width = ref(0),
+            height = ref(0);
         //computed values
-        const mementos = computed(()=>{
+        const mementos = computed(() => {
             return caretaker.getMementos();
         })
         //onmount dom
@@ -35,8 +41,8 @@ const app = createApp({
             const cnvs = canvas.value;
             renderer = new Renderer(cnvs);
             event = new Event(cnvs).listen();
-            box = Box.get().listen();
-        });     
+            box = Box.get();
+        });
 
         //event listeners
         pubsub.subscribe("drawbox", (dim) => {
@@ -50,46 +56,101 @@ const app = createApp({
             caretaker.saveMemento(layers);
         })
 
-        pubsub.subscribe("drawbrush", (dim) => {
-            layers.add("brush", dim);
+        pubsub.subscribe("drawbrush", (obj) => {
+            layers.add("brush", activeLayer.value, obj);
             renderer.render();
         })
 
-        pubsub.subscribe("brushdrawn", (dim) => {
-            layers.add("brush", dim);
+        pubsub.subscribe("brushdrawn", (obj) => {
+            layers.add("brush", activeLayer.value, obj);
             renderer.render();
             caretaker.saveMemento(layers);
+            brush.reset()
+        })
+
+        pubsub.subscribe("iserasing", (obj) => {
+            layers.add("eraser", activeLayer.value, obj);
+            renderer.render();
+        })
+
+        pubsub.subscribe("erasingdone", (obj) => {
+            layers.add("eraser", activeLayer.value, obj);
+            renderer.render();
+            caretaker.saveMemento(layers);
+            brush.reset()
         })
 
         //methods
-        const boxActivate = (e) => {
-            box.setBoxSelection(e);
-            pubsub.publish("boxselected", null);
+        const boxActivate = () => {
+            brush.setBrushSelection(false);
+            box.setBoxSelection(true);
+            box.listen()
         }
 
-        const brushActivate = (e) => {
-            brush.setBrushSelection(e);
-            pubsub.publish("brushselected", null);
+        const brushActivate = () => {
+            box.setBoxSelection(false);
+            brush.set({
+                isActive:true,
+                blendMode:'multiply'
+            });
+            brush.listen()
         }
 
-        const activate = (e,state) => {
-            switch(e) {
+        const eraserActivate = () => {
+            box.setBoxSelection(false);
+            brush.set({
+                isActive:true,
+                blendMode:'destination-out',
+                eventOn:"iserasing",
+                eventDone:"erasingdone"
+            });
+            brush.listen()
+        }
+
+        const activate = (e) => {
+            switch (e) {
                 case "box":
-                    boxActivate(state)
+                    boxActivate()
                     break;
                 case "brush":
-                    brushActivate(state)
+                    brushActivate()
+                    break;
+                case "eraser":
+                    eraserActivate()
                     break;
             }
         }
 
         const addImage = async (image) => {
-            const a = await loadImage(image);
+            let a = await loadImage(image);
+            if (layers.getLayers() == 0) {
+                const { width: w, height: h } = a;
+                renderer.set({ width: w, height: h });
+                const { width: ww, height: hh } = renderer.getCanvas();
+                let b = new Image(ww,hh)
+                b.src = a.src;
+                a = b
+                width.value = ww;
+                height.value = hh;
+            }
+            console.log(a)
             layers.add("image", {
-                blendingMode: "normal"
+                blendMode: "normal"
             }, a);
             renderer.render();
             caretaker.saveMemento(layers);
+        }
+
+        const addLayer = async () => {
+            const a = new Image();
+            const { width, height } = renderer.getCanvas()
+            a.width = width;
+            a.height = height;
+            layers.add("layer", {
+                blendMode: "normal"
+            }, a)
+            renderer.render();
+            caretaker.saveMemento(layers)
         }
 
         const addAdjustment = (a, ...args) => {
@@ -100,7 +161,7 @@ const app = createApp({
 
         const urdo = (a) => {
             caretaker.restoreMemento(a);
-            listLayers.value = layers.getLayers()
+            listLayers.value = layers.getLayers();
             renderer.render();
         }
 
@@ -117,9 +178,13 @@ const app = createApp({
             mementos,
             tab,
             tab1,
+            activeLayer,
+            width,
+            height,
             //methods
             activate,
             addImage,
+            addLayer,
             addAdjustment,
             urdo,
             setVisibility

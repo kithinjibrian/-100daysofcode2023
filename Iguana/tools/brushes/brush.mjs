@@ -1,13 +1,14 @@
 import Pubsub from "../../pubsub/pubsub.mjs"
+import Listen from "../listen.mjs";
 
-class Dim{
+class Dim {
     constructor() {
         this.index = 0
         this.dim = [[]]
     }
 
     push(dim) {
-        if(this.dim[this.index] === undefined) {
+        if (this.dim[this.index] === undefined) {
             this.dim[this.index] = [dim]
         } else {
             this.dim[this.index].push(dim)
@@ -28,37 +29,57 @@ export default class Brush {
         this.pubsub = Pubsub.get();
         this.isMouseDown = false;
         this.isBrushSelected = false;
+        this._listen = Listen.get()
         this.dim = new Dim();
     }
 
-    setBrushSelection(selected) {
-        this.isBrushSelected = selected;
+    set(opts) {
+        const def = {
+            isActive:false,
+            blendMode:'normal',
+            eventOn:"drawbrush",
+            eventDone:"brushdrawn"
+        }
+        Object.assign(def,opts)
+        this.isBrushSelected = def.isActive;
+        this.blendMode = def.blendMode;
+        this.eventOn = def.eventOn;
+        this.eventDone = def.eventDone;
+    }
+
+    reset() {
+        this.dim = new Dim()
     }
 
     listen() {
         const self = this;
-        self.pubsub.subscribe("brushselected", (e) => {
-            self.pubsub.subscribe("mousedown", (e1) => {
-                self.isMouseDown = true;
-                self.dim.push({
-                    x: e1.offsetX,
-                    y: e1.offsetY
-                })
-            })
-            self.pubsub.subscribe("mouseup", (e1) => {
+        this._listen.listen({
+            mousedown:(a) => {
+                self.isMouseDown = true
+                self.dim.push(a)
+            },
+            mouseup:()=>{
                 self.isMouseDown = false;
-                self.dim.next();
-                self.pubsub.publish("brushdrawn", self.dim.getDim());
-            })
-            self.pubsub.subscribe("mousemove", (e1) => {
-                if(!self.isMouseDown || !self.isBrushSelected) return;
-                self.dim.push({
-                    x: e1.offsetX,
-                    y: e1.offsetY
+                self.dim.next()
+                self.pubsub.publish(this.eventDone,{
+                    dim:self.dim.getDim(),
+                    opts:{
+                        blendMode:this.blendMode
+                    }
                 })
-                self.pubsub.publish("drawbrush", self.dim.getDim())
-            })
+            },
+            mousemove:(e) => {
+                if(!self.isMouseDown || !self.isBrushSelected) return;
+                self.dim.push(e)
+                self.pubsub.publish(this.eventOn,{
+                    dim:self.dim.getDim(),
+                    opts:{
+                        blendMode:this.blendMode
+                    }
+                })
+            }
         })
+
         return this;
     }
 }

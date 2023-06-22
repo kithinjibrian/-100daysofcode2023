@@ -80,6 +80,15 @@ class Layers {
                     fn: this.image(args[1])
                 });
                 break;
+            case "layer":
+                this.layers.unshift({
+                    type: 'layer',
+                    visible: true,
+                    opts: args[0],
+                    action: "addLayer",
+                    fn: this.image(args[1])
+                });
+                break;
             case 'selection':
                 const index = this.layers.findIndex(({ type }) => type == 'selection');
                 if (index != -1) {
@@ -94,19 +103,27 @@ class Layers {
                 });
                 break;
             case 'brush':
-                const index1 = this.layers.findIndex(({ type }) => type == 'brush');
-                if (index1 != -1) {
-                    this.layers.splice(index1, 1);
-                }
-                this.layers.unshift({
-                    type: 'brush',
-                    visible: true,
-                    dim: [...args[0]],
-                    action: "brushDraw",
-                    fn: () => console.log('orca')
-                });
+                this.brushes('brush',...args)
+                break;
+            case 'eraser':
+                this.brushes('eraser',...args)
                 break;
         }
+    }
+
+    brushes(name,...args) {
+        const ae = this.layers[args[0]];
+        let ce = {}
+        if (name in ae) {
+            const de = 'dim' in ae[name] ? ae[name]['dim'] : []
+            ce.dim = [...de, ...args[1]['dim']];
+            ce.opts = args[1]['opts']
+        }
+        this.layers[args[0]] = {
+            ...ae,
+            action: "erasing",
+            [name]: ce
+        };
     }
 
     grayscale(data) {

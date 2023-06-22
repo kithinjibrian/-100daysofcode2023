@@ -16,6 +16,13 @@ class Pubsub {
             this.subscribers.set(event, [fn]);
         }
     }
+
+    unsubcribe(event) {
+        if (this.subscribers.has(event)) {
+            this.subscribers.delete(event);
+        }
+    }
+
     publish(event, ...args) {
         if (this.subscribers.has(event)) {
             const fn = this.subscribers.get(event);
